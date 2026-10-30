@@ -8,4 +8,4 @@ Planned stack: React + TypeScript + Vite in frontend/, FastAPI + LangGraph in ba
 
 Start with [the documentation index](docs/README.md), [scope and workflow](docs/planning/project-scope.md), and [discussion from the beginning](docs/notes/conversation-guide.md). Collaboration rules are in AGENTS.md.
 
-Local Git exists. GitHub creation and push await authenticated access. No live agent, evaluated results, or deployed UI exists yet.
+Private GitHub repository: https://github.com/Manoj85/week3-deal-review-agent. GitHub CLI authentication is configured; verify push status in Git when needed. No live agent, evaluated results, or deployed UI exists yet.
