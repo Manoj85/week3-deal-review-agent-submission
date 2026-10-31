@@ -35,20 +35,20 @@ These six internal demonstration rules are not actual lending regulations:
 
 ## Local setup on Windows PowerShell
 
-Use a terminal opened at this repository root, not inside backend/. The environment folder is **venv**. The commands below show the author's Windows checkout path; substitute your own checkout path on another machine.
+Use a terminal opened at this repository root, not inside backend/. The environment folder is **venv**. Replace C:\path\to\week3-deal-review-agent-submission below with your actual checkout path.
 
 ### 1 Open the project
 
 ```powershell
-cd 'C:\Users\pmami\Documents\Sairam\GithubWorkspace\mai-certification-gen-academy-oct-cohort\week3-deal-review-agent'
+cd 'C:\path\to\week3-deal-review-agent-submission'
 python --version
 ```
 
-Python 3.14.2 is used by the repaired local environment. The earlier checkpoint was also tested with Python 3.12. Do not run venv creation over an existing environment when switching Python versions; use a fresh environment and reinstall dependencies.
+Python 3.14.2 is the runtime verified for this submission. Earlier development checkpoints also used Python 3.12; the full current submission has not been reverified on Python 3.12. Do not run venv creation over an existing environment when switching Python versions; use a fresh environment and reinstall dependencies.
 
 ### 2 Create the environment once
 
-Skip this step if this project's venv already exists. It has already been created on this machine.
+Run once on a fresh checkout. Skip only if this checkout already has a working venv using the correct Python version.
 
 ```powershell
 python -m venv venv
@@ -112,14 +112,14 @@ python -m uvicorn backend.app.main:app --reload --reload-dir backend --host 127.
 
 Keep that terminal running. Open [API documentation](http://127.0.0.1:8013/docs) or [health check](http://127.0.0.1:8013/health). Stop the server with Ctrl+C. This opens the backend's API documentation. Start the React workspace in a second terminal using the steps below.
 
-`backend.app.main` means `backend/app/main.py`; `:app` selects the FastAPI object named `app`. `--reload` restarts the server when source files change; `--reload-dir backend` watches our backend code rather than installed packages in venv. Your budgeting repo uses `app.main:app` because its app/ directory is directly under its repo root. Here app/ is inside backend/, so the prefix is `backend.app.main:app` when running from the root.
+`backend.app.main` means `backend/app/main.py`; `:app` selects the FastAPI object named `app`. `--reload` restarts the server when source files change; `--reload-dir backend` watches our backend code rather than installed packages in venv. Here app/ is inside backend/, so use `backend.app.main:app` from the root.
 
 ## Start again on another day
 
 Once dependencies are installed, you only need:
 
 ```powershell
-cd 'C:\Users\pmami\Documents\Sairam\GithubWorkspace\mai-certification-gen-academy-oct-cohort\week3-deal-review-agent'
+cd 'C:\path\to\week3-deal-review-agent-submission'
 .\venv\Scripts\Activate.ps1
 python -m uvicorn backend.app.main:app --reload --reload-dir backend --host 127.0.0.1 --port 8013
 ```
@@ -139,16 +139,16 @@ python -m backend.run_sample
 python -m pytest -q
 ```
 
-**The CLI sample uses Nebius credits in live mode.** The tests are offline. The CLI sample is a one-shot preview, not a saved lifecycle record. It saves its full request/review under work/checkpoint-01/. Expected route: EXCEPTIONS_FOR_REVIEW, with P03, P04, and P06 flagged. To send the sample to the running server:
+**The CLI sample uses Nebius credits in live mode.** The tests are offline. The CLI sample is a one-shot preview, not a saved lifecycle record. It saves its full request/review under work/checkpoint-01/. Expected route: EXCEPTIONS_FOR_REVIEW, with P03, P04, and P06 flagged. To send the sample directly to the running server, use the tracked request below; this does not require a previous CLI run. Posting it is a separate analysis and uses credits in live mode:
 
 ```powershell
-$body = Get-Content -LiteralPath 'work/checkpoint-01/sample-request.json' -Raw
+$body = Get-Content -LiteralPath 'frontend/src/sample.json' -Raw
 Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8013/reviews' -ContentType 'application/json' -Body $body
 ```
 
 ## Inspect the three specialist roles
 
-The saved API response includes review_id, revision, lifecycle_status and packet. Inside packet are agent_runs, policy_review, risk_findings, aggregate model_calls and per-stage token metadata. Rule decisions and arithmetic remain authoritative Python outputs. Each live review now uses multiple calls, not just extraction. See [the specialist walkthrough](docs/lessons/06-specialist-workflow.md).
+The saved API response includes review_id, revision, lifecycle_status and packet. Inside packet are agent_runs, policy_review, risk_findings, aggregate model_calls and per-stage token metadata. Rule decisions and arithmetic remain authoritative Python outputs. Each live review now uses multiple calls, not just extraction.
 
 ## Start the React workspace
 
@@ -171,7 +171,7 @@ npm run dev
 
 **Windows certificate-chain error during npm ci:** in PowerShell run `$env:NODE_USE_SYSTEM_CA='1'`, then retry npm ci. Keep TLS verification enabled.
 
-See [the complete UI setup and walkthrough](docs/lessons/08-react-workspace.md), including Git Bash commands, failure recovery and browser tests. Model credentials remain in the backend's ignored .env. No frontend .env or new service account is needed.
+Model credentials remain in the backend's ignored .env. No frontend .env or new service account is needed.
 
 **Frontend checks** (run from frontend/):
 
@@ -199,13 +199,13 @@ POST /reviews still accepts document_id, submitted_on, and proposal_text. Its re
 | POST /reviews/{review_id}/actions | Clarify, request revision, or mark the packet reviewed. |
 | POST /reviews/{review_id}/retry | Resume a failed processing stage from its checkpoint. |
 
-Follow [the complete Swagger walkthrough and ready-to-copy JSON examples](docs/lessons/07-saved-human-review.md). Use the top-level review_id in URLs, not packet.run_id. Mark reviewed records a packet-review action, never a loan approval or denial.
+Use the top-level review_id in URLs, not packet.run_id. Mark reviewed records a packet-review action, never a loan approval or denial.
 
 SQLite files live in ignored **local_data/** and are not pushed to Git. The optional REVIEW_DATA_DIR setting changes that path. This is a local demo without verified reviewer identities or authentication. The React workspace uses these same saved-review endpoints.
 
 ## Connect Nebius
 
-Follow [the step-by-step Nebius setup and lesson](docs/services/nebius-setup.md). Configuration defaults to nebius; missing or invalid settings produce an error instead of a parser fallback. Restart Uvicorn after changing .env. Model calls use API credits.
+Use the model setup instructions above. Configuration defaults to nebius; missing or invalid settings produce an error instead of a parser fallback. Restart Uvicorn after changing .env. Model calls use API credits.
 
 ## Activate in other Windows shells
 
@@ -243,7 +243,7 @@ python -m pytest -q
 - **Port 8013 already in use:** check /health; use the existing instance or stop its terminal before restarting. Alternatively choose another port and use that port in your browser.
 - **Pydantic/native-extension import error after changing Python:** recreate the environment cleanly; do not reuse packages installed for another Python version.
 
-See [detailed local setup](docs/services/backend-local-setup.md) for environment recovery and activation help.
+If a request fails after submission, refresh saved reviews before creating another. A failed create has no idempotency key; human-action retries use an action ID to avoid duplicate actions.
 
 ## Recovery and practical limits
 
@@ -253,14 +253,55 @@ See [detailed local setup](docs/services/backend-local-setup.md) for environment
 - Actor names are self-reported. There is no authentication, shared-user deployment, streaming/background analysis, PDF/OCR intake or banking integration.
 - Exact quote matching and numeric guards do not prove semantic faithfulness. Broad quality claims require the separate Week 4 evaluation.
 
-## Project and learning documentation
+## Repository layout
 
-- [Documentation index](docs/README.md)
-- [Scope and fictional policy](docs/planning/project-scope.md)
-- [Backend inputs and outputs](docs/lessons/03-backend-input-output.md)
-- [Project and test structure](docs/repository/project-structure.md)
-- [Discussion from the beginning](docs/notes/conversation-guide.md)
+- backend/app/: FastAPI routes, specialist roles, models, tools, storage and LangGraph workflows.
+- backend/tests/: offline unit and API/state-recovery integration tests.
+- frontend/src/: React workspace, typed API client and synthetic input sample.
+- frontend/tests/: Chromium tests against a real isolated offline API.
+- data/proposals/: the synthetic Markdown proposal used by the CLI.
+- .env.example: safe model/storage configuration template.
 
-Frontend: React + TypeScript + Vite. Backend: FastAPI + LangGraph. Both share this repository. Week 4 evaluations get a separate repository later. Nebius key/model settings are required for live mode; tests remain offline.
+This submission retains the relevant application and main README history. Private development notes and AGENTS.md are excluded. Dependencies, local data and build/test output remain ignored. No model credentials or existing review database are supplied.
 
-Private repository: https://github.com/Manoj85/week3-deal-review-agent.
+## Submit the complete request in Swagger
+
+1. Keep the backend running and open [http://127.0.0.1:8013/docs](http://127.0.0.1:8013/docs).
+2. Open frontend/src/sample.json in your editor and copy the entire JSON object.
+3. Expand **POST /reviews**, click **Try it out**, replace the **Request body** with that object and click **Execute** once.
+4. Confirm the actual **Server response** is 200. The documented 422 response shown elsewhere on Swagger is not a second response to the successful call.
+5. Copy the top-level **review_id** for other endpoints. Do not use packet.run_id in those URLs.
+6. Inspect packet.rules for P03/P04/P06 flags and lifecycle_status=AWAITING_REVIEW. Packet workflow status and saved human lifecycle status have different purposes.
+7. Expand **GET /reviews/{review_id}**, enter that ID and execute to reopen the record. This read does not call the model.
+
+The request must contain only document_id, submitted_on and proposal_text. Do not paste the returned packet back into POST /reviews; that produces an actual 422 validation failure before inference.
+
+## Human review, corrections and retries
+
+**In the React workspace:**
+
+1. Open a saved review and inspect all policy findings and source evidence.
+2. Enter your name and a review note, then choose **Mark packet reviewed** or **Request changes**.
+3. A request for changes pauses for clarification. Read the reviewer request and edit the **Complete corrected proposal** field, supplying the entire source rather than only an answer sentence.
+4. Enter the analyst name/note and click **Submit corrected proposal**. This reruns all three roles and creates a new revision, using credits in live mode.
+5. Select an archived **Packet version** to inspect the old packet. Return to the current version to act; archived packets have no action form.
+6. Click **Download JSON** to export the current saved record or selected archived version locally.
+
+**API actions** use action_id, expected_revision, actor and note. The /actions endpoint also requires action=clarify, request_revision or mark_reviewed; clarify requires replacement_proposal_text containing the full corrected source. The /retry endpoint uses the common four fields without action, after a failed/interrupted processing stage. Use a new UUID for a new action, and repeat the identical ID/body when retrying an uncertain result. Reusing an ID with a different body is rejected.
+
+**Recovery:**
+
+- Missing/conflicting facts pause for clarification. A failed provider stage is a different state and uses **Retry failed stage**.
+- A repeated human action sends the same payload safely. A stale expected_revision returns 409: reload and inspect the current record before making another action.
+- **Reload record** discards unsent human-action form changes. Unsaved text and uncertain action IDs are held in browser memory; avoid reloading during submission.
+- Reviewed records are terminal in this demo. Create a new review for another run.
+- The sidebar shows the latest 100 saved records. Restarting the API preserves them in its local data directory.
+
+## Verification and submission status
+
+The submission extraction is based on learning-repo commit af78adbfe80ba072e3ddcbcdfdc1d3330a6ad922. Application files are retained byte-for-byte; this README has submission-specific setup/link cleanup. Filtered commits have new IDs while preserving the relevant code/README changes, authors and ordering. A submission-only .gitattributes rule keeps fresh checkouts at LF line endings for the formatter; application Git blobs remain unchanged.
+
+The local build is separate from final course submission. A Google Doc and a live demo video of five minutes or less are still separate deliverables. GitHub publication/reviewer access is not configured by creating this local repo. Week 4 evaluations belong in a separate later project.
+
+
+**Fresh-install verification:** Python 3.14.2 venv creation, pinned backend/developer installation and npm ci completed in this repository. All 41 backend tests, backend static/dependency checks, strict frontend build, formatting and four Chromium browser tests passed. The existing 13 third-party LangSmith deprecation warnings remain. Browser assertions use short readiness waits; an initial run under concurrent setup load timed out on two waits, and the complete suite passed when rerun on its own. These tests are offline and do not measure live semantic quality. No model key or prior local review database was copied here.
