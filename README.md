@@ -1,6 +1,6 @@
 # Week 3 Small Business Loan Review Assistant
 
-Project 3B, code track. The current backend runs three Nebius-backed specialist roles: extraction, policy review with checked Python tools, and cited risk summary. Saved human review, clarification/resume, and revision history are implemented with local SQLite. React is the next application checkpoint.
+Project 3B, code track. The current backend runs three Nebius-backed specialist roles: extraction, policy review with checked Python tools, and cited risk summary. Saved human review, clarification/resume, and revision history are implemented with local SQLite. The React + TypeScript + Vite workspace now supports the complete local review flow.
 
 ## Local setup on Windows PowerShell
 
@@ -55,7 +55,7 @@ Stay at the repository root with venv activated:
 python -m uvicorn backend.app.main:app --reload --reload-dir backend --host 127.0.0.1 --port 8013
 ```
 
-Keep that terminal running. Open [API documentation](http://127.0.0.1:8013/docs) or [health check](http://127.0.0.1:8013/health). Stop the server with Ctrl+C. This opens the backend's API documentation; the React interface has not been built yet.
+Keep that terminal running. Open [API documentation](http://127.0.0.1:8013/docs) or [health check](http://127.0.0.1:8013/health). Stop the server with Ctrl+C. This opens the backend's API documentation. Start the React workspace in a second terminal using the steps below.
 
 `backend.app.main` means `backend/app/main.py`; `:app` selects the FastAPI object named `app`. `--reload` restarts the server when source files change; `--reload-dir backend` watches our backend code rather than installed packages in venv. Your budgeting repo uses `app.main:app` because its app/ directory is directly under its repo root. Here app/ is inside backend/, so the prefix is `backend.app.main:app` when running from the root.
 
@@ -95,6 +95,40 @@ Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8013/reviews' -ContentType
 
 The saved API response includes review_id, revision, lifecycle_status and packet. Inside packet are agent_runs, policy_review, risk_findings, aggregate model_calls and per-stage token metadata. Rule decisions and arithmetic remain authoritative Python outputs. Each live review now uses multiple calls, not just extraction. See [the specialist walkthrough](docs/lessons/06-specialist-workflow.md).
 
+## Start the React workspace
+
+**Keep the backend running in Terminal A on port 8013.** Open Terminal B at this repository root, then run:
+
+```powershell
+cd frontend
+npm ci
+npm run dev
+```
+
+**Open [http://127.0.0.1:5173](http://127.0.0.1:5173).** A Python venv is not required in Terminal B. On later runs, skip npm ci unless dependencies changed. Node 25.4.0 was used locally; install a Node version supported by Vite.
+
+1. Click **Load bakery sample** to populate the complete request.
+2. Click **Build review packet** once; live analysis uses Nebius credits.
+3. Inspect policy findings, calculations, exact source quotes and agent activity.
+4. Enter a name/note to **Mark packet reviewed** or **Request changes**.
+5. Submit the full corrected proposal when clarification is needed, then inspect its revision history.
+6. Reopen records from **Saved reviews** or **Download JSON** for a local export.
+
+**Windows certificate-chain error during npm ci:** in PowerShell run `$env:NODE_USE_SYSTEM_CA='1'`, then retry npm ci. Keep TLS verification enabled.
+
+See [the complete UI setup and walkthrough](docs/lessons/08-react-workspace.md), including Git Bash commands, failure recovery and browser tests. Model credentials remain in the backend's ignored .env. No frontend .env or new service account is needed.
+
+**Frontend checks** (run from frontend/):
+
+```powershell
+npm run build
+npm run format:check
+npx playwright install chromium
+npm test
+```
+
+Browser tests use isolated offline API data on ports 8014/5174 and spend no model credits. The local UI proxy is not deployment configuration; Vercel hosting and a deployed backend remain future work.
+
 ## Saved human review and resume
 
 **Install updated dependencies and restart the API after pulling this checkpoint.**
@@ -112,7 +146,7 @@ POST /reviews still accepts document_id, submitted_on, and proposal_text. Its re
 
 Follow [the complete Swagger walkthrough and ready-to-copy JSON examples](docs/lessons/07-saved-human-review.md). Use the top-level review_id in URLs, not packet.run_id. Mark reviewed records a packet-review action, never a loan approval or denial.
 
-SQLite files live in ignored **local_data/** and are not pushed to Git. The optional REVIEW_DATA_DIR setting changes that path. This is a local demo without verified reviewer identities or authentication. The React interface remains next.
+SQLite files live in ignored **local_data/** and are not pushed to Git. The optional REVIEW_DATA_DIR setting changes that path. This is a local demo without verified reviewer identities or authentication. The React workspace uses these same saved-review endpoints.
 
 ## Connect Nebius
 
@@ -164,6 +198,6 @@ See [detailed local setup](docs/services/backend-local-setup.md) for environment
 - [Project and test structure](docs/repository/project-structure.md)
 - [Discussion from the beginning](docs/notes/conversation-guide.md)
 
-Planned frontend: React + TypeScript + Vite. Backend: FastAPI + LangGraph. Both share this repository. Week 4 evaluations get a separate repository later. Nebius key/model settings are required for live mode; tests remain offline.
+Frontend: React + TypeScript + Vite. Backend: FastAPI + LangGraph. Both share this repository. Week 4 evaluations get a separate repository later. Nebius key/model settings are required for live mode; tests remain offline.
 
 Private repository: https://github.com/Manoj85/week3-deal-review-agent.
