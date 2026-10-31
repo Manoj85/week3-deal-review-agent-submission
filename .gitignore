@@ -9,3 +9,10 @@ __pycache__/
 !.env.example
 work/
 local_data/
+
+# Frontend build and browser-test output
+node_modules/
+frontend/dist/
+frontend/test-results/
+frontend/playwright-report/
+*.tsbuildinfo
