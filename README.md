@@ -95,6 +95,22 @@ Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8013/reviews' -ContentType
 
 Follow [the step-by-step Nebius setup and lesson](docs/services/nebius-setup.md). Configuration defaults to nebius; missing or invalid settings produce an error instead of a parser fallback. Restart Uvicorn after changing .env. Model calls use API credits.
 
+## Activate in other Windows shells
+
+**Git Bash on Windows:**
+
+```bash
+source venv/Scripts/activate  #(Windows)
+```
+
+**PowerShell:**
+
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+Use the activation syntax for your shell, then run the same `python -m ...` commands from the repository root.
+
 ## Developer checks
 
 With venv activated, install the optional developer tools and check the code:
