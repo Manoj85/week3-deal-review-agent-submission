@@ -1,6 +1,6 @@
 # Week 3 Small Business Loan Review Assistant
 
-Project 3B, code track. The current backend reads a sample-format proposal, checks six fictional rules, and returns an evidence-backed review packet. Live AI agents and the React UI are later checkpoints.
+Project 3B, code track. The current backend uses Nebius to extract evidence-backed facts, then checks six fictional rules and builds a review packet. Full multi-agent behavior, human resume, and React remain later checkpoints.
 
 ## Local setup on Windows PowerShell
 
@@ -91,6 +91,10 @@ $body = Get-Content -LiteralPath 'work/checkpoint-01/sample-request.json' -Raw
 Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8013/reviews' -ContentType 'application/json' -Body $body
 ```
 
+## Connect Nebius
+
+Follow [the step-by-step Nebius setup and lesson](docs/services/nebius-setup.md). Configuration defaults to nebius; missing or invalid settings produce an error instead of a parser fallback. Restart Uvicorn after changing .env. Model calls use API credits.
+
 ## Developer checks
 
 With venv activated, install the optional developer tools and check the code:
@@ -121,6 +125,6 @@ See [detailed local setup](docs/services/backend-local-setup.md) for environment
 - [Project and test structure](docs/repository/project-structure.md)
 - [Discussion from the beginning](docs/notes/conversation-guide.md)
 
-Planned frontend: React + TypeScript + Vite. Backend: FastAPI + LangGraph. Both share this repository. Week 4 evaluations get a separate repository later. No model keys are needed for the current offline slice.
+Planned frontend: React + TypeScript + Vite. Backend: FastAPI + LangGraph. Both share this repository. Week 4 evaluations get a separate repository later. Nebius key/model settings are required for live mode; tests remain offline.
 
 Private repository: https://github.com/Manoj85/week3-deal-review-agent.
