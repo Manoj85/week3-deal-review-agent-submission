@@ -1,6 +1,6 @@
 # Week 3 Small Business Loan Review Assistant
 
-Project 3B, code track. The current backend runs three Nebius-backed specialist roles: extraction, policy review with checked Python tools, and cited risk summary. Durable human review/resume and React remain later checkpoints.
+Project 3B, code track. The current backend runs three Nebius-backed specialist roles: extraction, policy review with checked Python tools, and cited risk summary. Saved human review, clarification/resume, and revision history are implemented with local SQLite. React is the next application checkpoint.
 
 ## Local setup on Windows PowerShell
 
@@ -84,7 +84,7 @@ python -m backend.run_sample
 python -m pytest -q
 ```
 
-The sample saves its full request/review under work/checkpoint-01/. Expected route: EXCEPTIONS_FOR_REVIEW, with P03, P04, and P06 flagged. To send the sample to the running server:
+The CLI sample is a one-shot preview, not a saved lifecycle record. It saves its full request/review under work/checkpoint-01/. Expected route: EXCEPTIONS_FOR_REVIEW, with P03, P04, and P06 flagged. To send the sample to the running server:
 
 ```powershell
 $body = Get-Content -LiteralPath 'work/checkpoint-01/sample-request.json' -Raw
@@ -93,7 +93,26 @@ Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8013/reviews' -ContentType
 
 ## Inspect the three specialist roles
 
-The response includes agent_runs, policy_review, risk_findings, aggregate model_calls, and per-stage token metadata. Rule decisions and arithmetic remain authoritative Python outputs. Each live review now uses multiple calls, not just extraction. See [the specialist walkthrough](docs/lessons/06-specialist-workflow.md).
+The saved API response includes review_id, revision, lifecycle_status and packet. Inside packet are agent_runs, policy_review, risk_findings, aggregate model_calls and per-stage token metadata. Rule decisions and arithmetic remain authoritative Python outputs. Each live review now uses multiple calls, not just extraction. See [the specialist walkthrough](docs/lessons/06-specialist-workflow.md).
+
+## Saved human review and resume
+
+**Install updated dependencies and restart the API after pulling this checkpoint.**
+
+POST /reviews still accepts document_id, submitted_on, and proposal_text. Its response now wraps the analysis inside **packet**, beside **review_id**, **revision**, **lifecycle_status**, history summaries and pending human action.
+
+| Endpoint | Purpose |
+| --- | --- |
+| POST /reviews | Create, analyze and save a review, then pause for a human. |
+| GET /reviews | List recent saved reviews without model calls. |
+| GET /reviews/{review_id} | Reopen the saved state after a restart. |
+| GET /reviews/{review_id}/history | Read complete accepted revision snapshots. |
+| POST /reviews/{review_id}/actions | Clarify, request revision, or mark the packet reviewed. |
+| POST /reviews/{review_id}/retry | Resume a failed processing stage from its checkpoint. |
+
+Follow [the complete Swagger walkthrough and ready-to-copy JSON examples](docs/lessons/07-saved-human-review.md). Use the top-level review_id in URLs, not packet.run_id. Mark reviewed records a packet-review action, never a loan approval or denial.
+
+SQLite files live in ignored **local_data/** and are not pushed to Git. The optional REVIEW_DATA_DIR setting changes that path. This is a local demo without verified reviewer identities or authentication. The React interface remains next.
 
 ## Connect Nebius
 
