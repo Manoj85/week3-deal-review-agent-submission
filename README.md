@@ -2,9 +2,40 @@
 
 Project 3B, code track. The current backend runs three Nebius-backed specialist roles: extraction, policy review with checked Python tools, and cited risk summary. Saved human review, clarification/resume, and revision history are implemented with local SQLite. The React + TypeScript + Vite workspace now supports the complete local review flow.
 
+## User and workflow
+
+**User:** a loan operations analyst preparing the daily small-business loan review queue. The application replaces copying proposal terms into a checklist, calculating ratios, locating supporting evidence, and drafting an initial review memo. No time-saving percentage has been measured.
+
+**One-line goal:** help the analyst turn a proposal into a traceable six-rule review packet in a local web workspace, using three specialists and three model-selected read/calculation tools, then hand it to a human for clarification or review; the proposed acceptance target is a usable, correctly routed packet within two minutes with all six findings traceable, to be measured on reviewed cases in Week 4.
+
+- **Extraction specialist:** identifies financial terms and explicit people/roles; Python verifies exact source spans and field consistency.
+- **Policy specialist:** selects get_policy_rules and evaluate_policy; Python Decimal calculations own the six outcomes.
+- **Risk specialist:** selects get_checked_evidence and drafts a cited summary; Python validates rule coverage, references and status-based actions.
+- **Orchestrator:** an explicit LangGraph state machine sequences stages, chooses clarification/exception/ready routes, persists state and pauses for human input. It is deterministic orchestration, not a fourth model role.
+- **Human:** supplies corrected source text, requests changes or marks a packet reviewed. SQLite preserves revisions and audit events across API restarts. No action approves or denies a loan.
+
+Model-selected tool calls use validated JSON actions executed by Python, not native provider function calling. Reads/calculations are autonomous; source corrections and reviewer actions require explicit UI/API submissions.
+
+## Fictional classroom policy and sample output
+
+These six internal demonstration rules are not actual lending regulations:
+
+| Rule | Check | Bakery sample result |
+| --- | --- | --- |
+| P01 | USD principal from 25,000 to 150,000 inclusive | PASS: 120,000 |
+| P02 | At least 24 established operating months | PASS: 36 |
+| P03 | Principal / latest-year revenue at most 0.25 | FLAG: 120,000 / 400,000 = 0.30 |
+| P04 | Annual cash available / total annual debt service at least 1.25 | FLAG: 72,000 / (36,000 + 24,000) = 1.20 |
+| P05 | Explicit allocation to equipment/operating working capital | PASS: 90,000 equipment + 30,000 working capital; debt refinancing/personal use explicitly excluded |
+| P06 | Latest-year financials and latest three completed monthly bank statements included | FLAG: September 2026 bank statement explicitly missing |
+
+**Sample source:** data/proposals/sample-001.md. **Complete request:** frontend/src/sample.json. Both describe the fictional Maple Street Bakery, submitted October 30, 2026. Keep that date when reproducing its document-completeness result. No real applicant data, credit-bureau dataset or external training corpus is used.
+
+**Expected analysis:** EXCEPTIONS_FOR_REVIEW with P03/P04/P06 flagged. **Saved state:** AWAITING_REVIEW until a human action. Missing or conflicting required evidence returns UNKNOWN and routes to NEEDS_CLARIFICATION while preserving established flags. The live sample's three roles completed in six calls; that observation is not a general success-rate or latency benchmark.
+
 ## Local setup on Windows PowerShell
 
-Use a terminal opened at this repository root, not inside backend/. The environment folder is **venv**.
+Use a terminal opened at this repository root, not inside backend/. The environment folder is **venv**. The commands below show the author's Windows checkout path; substitute your own checkout path on another machine.
 
 ### 1 Open the project
 
@@ -47,6 +78,30 @@ python -m uvicorn --version
 
 Do not continue to startup if installation failed. Uvicorn is included in our dependency files; no global Uvicorn installation is needed.
 
+### Configure the model before starting the backend
+
+**Fresh checkout only:** create the ignored root .env from the safe template. Preserve an existing .env:
+
+```powershell
+if (!(Test-Path -LiteralPath '.env')) {
+    Copy-Item -LiteralPath '.env.example' -Destination '.env'
+}
+```
+
+Open .env in your editor and fill in your own account settings:
+
+```dotenv
+EXTRACTION_MODE=nebius
+NEBIUS_API_KEY=your-nebius-key
+NEBIUS_BASE_URL=https://api.tokenfactory.nebius.com/v1/
+NEBIUS_CHAT_MODEL=nvidia/Nemotron-3_5-Lightning
+REVIEW_DATA_DIR=local_data
+```
+
+The model shown is the one used for recorded live checks; use an accessible model in your account. Keep .env private and never put its key in frontend files or Vite variables. Restart the API after editing it. Missing credentials stop processing; there is no silent offline fallback.
+
+**Optional offline demonstration:** set EXTRACTION_MODE=offline_sample_parser in .env and restart. This uses the narrow sample-format parser and no model credits; it does not demonstrate the live three-agent behavior. Backend/browser tests explicitly select offline mode independently of the live .env.
+
 ### 5 Start the backend
 
 Stay at the repository root with venv activated:
@@ -84,7 +139,7 @@ python -m backend.run_sample
 python -m pytest -q
 ```
 
-The CLI sample is a one-shot preview, not a saved lifecycle record. It saves its full request/review under work/checkpoint-01/. Expected route: EXCEPTIONS_FOR_REVIEW, with P03, P04, and P06 flagged. To send the sample to the running server:
+**The CLI sample uses Nebius credits in live mode.** The tests are offline. The CLI sample is a one-shot preview, not a saved lifecycle record. It saves its full request/review under work/checkpoint-01/. Expected route: EXCEPTIONS_FOR_REVIEW, with P03, P04, and P06 flagged. To send the sample to the running server:
 
 ```powershell
 $body = Get-Content -LiteralPath 'work/checkpoint-01/sample-request.json' -Raw
@@ -189,6 +244,14 @@ python -m pytest -q
 - **Pydantic/native-extension import error after changing Python:** recreate the environment cleanly; do not reuse packages installed for another Python version.
 
 See [detailed local setup](docs/services/backend-local-setup.md) for environment recovery and activation help.
+
+## Recovery and practical limits
+
+- Transient provider failures and invalid structured output have bounded retry/repair. Repeated failure saves ERROR_NEEDS_REVIEW and accepted earlier-stage work; the retry endpoint resumes the unfinished stage.
+- Clarification supplies the whole corrected proposal and reruns analysis as a new revision. Reads and mark-reviewed actions do not call models.
+- Local SQLite data is ignored by Git. Back it up separately if needed. An abruptly terminated in-flight operation may retain a 30-minute lease; a model call completed before its result was checkpointed can repeat during recovery.
+- Actor names are self-reported. There is no authentication, shared-user deployment, streaming/background analysis, PDF/OCR intake or banking integration.
+- Exact quote matching and numeric guards do not prove semantic faithfulness. Broad quality claims require the separate Week 4 evaluation.
 
 ## Project and learning documentation
 
