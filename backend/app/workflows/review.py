@@ -208,13 +208,18 @@ def review(request: ReviewRequest) -> ReviewPacket:
         "summary": "",
     }
     result = cast(ReviewState, graph.invoke(initial))
+    return packet_from_state(result, str(uuid4()), round((perf_counter() - started) * 1000, 3))
+
+
+def packet_from_state(result: ReviewState, run_id: str, elapsed_ms: float) -> ReviewPacket:
+    request = result["request"]
     runs = result["agent_runs"]
     usage = {
         key: sum(run.usage.get(key, 0) for run in runs)
         for key in ["prompt_tokens", "completion_tokens", "total_tokens"]
     }
     return ReviewPacket(
-        run_id=str(uuid4()),
+        run_id=run_id,
         mode=result["mode"],
         model_calls=sum(run.model_calls for run in runs),
         model_metadata={
@@ -250,10 +255,10 @@ def review(request: ReviewRequest) -> ReviewPacket:
             if r.status != "PASS"
         ]
         + ["Have a human credit reviewer review the packet."],
-        elapsed_ms=round((perf_counter() - started) * 1000, 3),
+        elapsed_ms=elapsed_ms,
         limitations=[
             "Three specialized roles use Nebius in live mode; offline mode is explicit test behavior.",
-            "No PDF ingestion, durable persistence, human resume, or live progress stream yet.",
+            "Analysis packet only; saved lifecycle metadata is supplied by the saved-review API. No PDF or live progress stream yet.",
             "Narrative references/numbers are checked; full semantic faithfulness still requires human review.",
             "Proposal-reported document inclusion does not verify attachments or authenticity.",
             "Calendar fiscal years and the existing extraction limits still apply. No real credit decisions.",

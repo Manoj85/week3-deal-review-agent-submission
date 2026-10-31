@@ -25,3 +25,9 @@ def settings() -> Settings:
         model=values.get("NEBIUS_CHAT_MODEL") or "",
         base_url=values.get("NEBIUS_BASE_URL") or "https://api.tokenfactory.nebius.com/v1/",
     )
+
+
+def review_data_directory() -> Path:
+    values = {**dotenv_values(ROOT / ".env", interpolate=False), **os.environ}
+    path = Path(values.get("REVIEW_DATA_DIR") or "local_data")
+    return path if path.is_absolute() else ROOT / path

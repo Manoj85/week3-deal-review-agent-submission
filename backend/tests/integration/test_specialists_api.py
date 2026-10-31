@@ -121,7 +121,7 @@ def test_tool_agents_execute_real_python_tools_and_total_usage(monkeypatch):
     monkeypatch.setattr(AgentClient, "chat", chat)
     response = TestClient(app).post("/reviews", json=sample_request().model_dump(mode="json"))
     assert response.status_code == 200, response.text
-    packet = response.json()
+    packet = response.json()["packet"]
     assert packet["workflow_status"] == "EXCEPTIONS_FOR_REVIEW"
     assert [run["agent"] for run in packet["agent_runs"]] == [
         "extraction",

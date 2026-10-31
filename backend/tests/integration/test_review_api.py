@@ -14,7 +14,7 @@ def run(text=None):
         request["proposal_text"] = text
     response = client.post("/reviews", json=request)
     assert response.status_code == 200, response.text
-    return response.json()
+    return response.json()["packet"]
 
 
 def statuses(packet):
