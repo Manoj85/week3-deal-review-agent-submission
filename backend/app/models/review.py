@@ -63,7 +63,7 @@ class ReviewPacket(BaseModel):
     document_id: str
     submitted_on: date
     policy_version: Literal["0.1"] = "0.1"
-    mode: Literal["offline_sample_parser"] = "offline_sample_parser"
+    mode: Literal["offline_sample_parser", "nebius"] = "offline_sample_parser"
     normalized_source: str
     source_sha256: str
     terms: dict[str, Fact]
@@ -75,5 +75,6 @@ class ReviewPacket(BaseModel):
     human_review_required: Literal[True] = True
     events: list[StepEvent]
     elapsed_ms: float
-    model_calls: Literal[0] = 0
+    model_calls: int = 0
+    model_metadata: dict = Field(default_factory=dict)
     limitations: list[str]

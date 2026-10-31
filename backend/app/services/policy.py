@@ -127,17 +127,22 @@ def evaluate(terms: dict[str, Fact], submitted_on: date) -> list[RuleResult]:
 
     refs = ["purpose_statement", "equipment_amount", "working_capital_amount", "requested_amount"]
     statement = terms["purpose_statement"]
-    if statement.state == "KNOWN" and not statement.require_value().lower().startswith(
-        "no proceeds"
+    if (
+        statement.state == "KNOWN"
+        and statement.require_value() != "ELIGIBLE"
+        and not statement.require_value().lower().startswith("no proceeds")
     ):
         add("P05", "FLAG", "An explicitly prohibited use of proceeds is present.", refs)
-    elif known(*refs) and statement.require_value().lower().startswith("no proceeds"):
+    elif known(*refs) and (
+        statement.require_value() == "ELIGIBLE"
+        or statement.require_value().lower().startswith("no proceeds")
+    ):
         equipment, working, requested = (number(n) for n in refs[1:])
         if min(equipment, working, requested) >= 0 and equipment + working == requested:
             add(
                 "P05",
                 "PASS",
-                "All requested proceeds are allocated to equipment and operating working capital; prohibited uses are negated.",
+                "All requested proceeds are allocated to eligible equipment and operating working capital.",
                 refs,
                 f"{equipment} + {working} = {requested}",
             )

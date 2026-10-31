@@ -7,6 +7,6 @@ from .api.routes import router
 app = FastAPI(
     title="Loan Review Checkpoint API",
     version="0.1.0",
-    description="Offline sample-format backend slice using fictional policy. No credit decisions.",
+    description="Nebius-backed fact extraction and fictional policy review. No credit decisions.",
 )
 app.include_router(router)

@@ -1,4 +1,4 @@
-"""Actual LangGraph flow; nodes are offline functions at this checkpoint."""
+"""LangGraph flow with selectable Nebius extraction and deterministic policy/summary."""
 
 from collections.abc import Callable
 from hashlib import sha256
@@ -8,8 +8,10 @@ from uuid import uuid4
 
 from langgraph.graph import END, START, StateGraph
 
+from ..config import settings
 from ..models.review import Fact, ReviewPacket, ReviewRequest, RuleResult, StepEvent, WorkflowStatus
 from ..services.extraction import extract
+from ..services.nebius import ProviderError, extract_nebius
 from ..services.policy import evaluate
 
 
@@ -20,10 +22,16 @@ class ReviewState(TypedDict):
     events: list[StepEvent]
     workflow_status: WorkflowStatus
     summary: str
+    mode: Literal["offline_sample_parser", "nebius"]
+    model_metadata: dict
 
 
 def extraction_step(state: ReviewState):
-    return {"terms": extract(state["request"]), "events": [StepEvent(step="extract_terms")]}
+    if state["mode"] == "nebius":
+        terms, metadata = extract_nebius(state["request"])
+    else:
+        terms, metadata = extract(state["request"]), {"model_calls": 0}
+    return {"terms": terms, "model_metadata": metadata, "events": [StepEvent(step="extract_terms")]}
 
 
 def policy_step(state: ReviewState):
@@ -87,7 +95,12 @@ graph = builder.compile()
 
 def review(request: ReviewRequest) -> ReviewPacket:
     started = perf_counter()
+    mode = settings().mode
+    if mode not in {"nebius", "offline_sample_parser"}:
+        raise ProviderError("EXTRACTION_MODE must be nebius or offline_sample_parser.")
     initial: ReviewState = {
+        "mode": cast(Literal["nebius", "offline_sample_parser"], mode),
+        "model_metadata": {},
         "request": request,
         "terms": {},
         "rules": [],
@@ -98,6 +111,9 @@ def review(request: ReviewRequest) -> ReviewPacket:
     result = cast(ReviewState, graph.invoke(initial))
     return ReviewPacket(
         run_id=str(uuid4()),
+        mode=result["mode"],
+        model_calls=result["model_metadata"].get("model_calls", 0),
+        model_metadata=result["model_metadata"],
         document_id=request.document_id,
         submitted_on=request.submitted_on,
         normalized_source=request.proposal_text,
@@ -116,8 +132,10 @@ def review(request: ReviewRequest) -> ReviewPacket:
         + ["Have a human credit reviewer review the packet."],
         elapsed_ms=round((perf_counter() - started) * 1000, 3),
         limitations=[
-            "Offline sample-format parser, not a live AI agent.",
-            "No arbitrary prose, PDF ingestion, persistence, human resume, or model calls yet.",
+            "Extraction mode: "
+            + result["mode"]
+            + "; policy checks and summary remain deterministic.",
+            "No PDF ingestion, persistence, human resume, or multi-agent model/tool loops yet.",
             "Document inclusion is proposal-reported; attachments are not verified.",
             "Calendar fiscal years only; unusual wording may be missed. Do not use for real lending.",
         ],
