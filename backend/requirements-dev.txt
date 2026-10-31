@@ -1,0 +1,4 @@
+-r requirements-lock.txt
+basedpyright==1.40.2
+nodejs-wheel-binaries==24.19.0
+ruff==0.17.3
