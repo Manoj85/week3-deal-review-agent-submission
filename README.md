@@ -1,11 +1,13 @@
 # Week 3 Small Business Loan Review Assistant
 
-Project 3B, code track. Planning only; application coding has not started.
+Project 3B, code track. First offline backend checkpoint implemented; live AI agents and UI remain planned.
 
-Target user: a loan operations analyst preparing the daily initial-review queue. Three agents extract terms, check fictional policy, and draft an evidence-backed risk packet for human review.
+Target user: a loan operations analyst preparing the daily initial-review queue. Intended application: three specialized agents extract terms, check fictional policy, and draft an evidence-backed review packet.
 
-Planned stack: React + TypeScript + Vite in frontend/, FastAPI + LangGraph in backend/. Both share this repository. Week 4 evaluation gets a separate repository later.
+Current slice: FastAPI request validation, a real LangGraph with sample-format extraction, Decimal policy checks, conditional routing, deterministic summary, and source evidence. Twelve tests pass. No provider/model calls, PDF ingestion, durable human review, or React implementation yet.
 
-Start with [the documentation index](docs/README.md), [scope and workflow](docs/planning/project-scope.md), and [discussion from the beginning](docs/notes/conversation-guide.md). Collaboration rules are in AGENTS.md.
+Planned UI: React + TypeScript + Vite in frontend/. Backend: backend/. Both share this repository. Week 4 evaluation gets a separate repository later.
 
-Private GitHub repository: https://github.com/Manoj85/week3-deal-review-agent. GitHub CLI authentication is configured; verify push status in Git when needed. No live agent, evaluated results, or deployed UI exists yet.
+Start with [the documentation index](docs/README.md), [backend contract lesson](docs/lessons/03-backend-input-output.md), and [local run instructions](docs/services/backend-local-setup.md). See [the scope](docs/planning/project-scope.md) for the full intended design, and [discussion history](docs/notes/conversation-guide.md) for decisions. Collaboration rules are in AGENTS.md.
+
+Private remote: https://github.com/Manoj85/week3-deal-review-agent.
