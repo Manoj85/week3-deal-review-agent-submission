@@ -1,8 +1,14 @@
 {
-  "include": ["backend"],
-  "exclude": [".venv", "work"],
+  "include": [
+    "backend"
+  ],
+  "exclude": [
+    "venv",
+    ".venv",
+    "work"
+  ],
   "venvPath": ".",
-  "venv": ".venv",
+  "venv": "venv",
   "pythonVersion": "3.12",
   "typeCheckingMode": "standard"
 }
