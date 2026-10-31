@@ -1,0 +1,2 @@
+# Keep source checkouts consistent with the committed formatter settings.
+* text=auto eol=lf
