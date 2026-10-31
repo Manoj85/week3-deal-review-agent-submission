@@ -92,4 +92,5 @@ def test_api_provider_failure_does_not_fall_back(monkeypatch):
     monkeypatch.setattr(workflow, "extract_nebius", fail)
     response = TestClient(app).post("/reviews", json=sample_request().model_dump(mode="json"))
     assert response.status_code == 502
-    assert response.json()["detail"] == "Test provider unavailable."
+    assert response.json()["detail"]["message"] == "Test provider unavailable."
+    assert response.json()["detail"]["stage"] == "extraction"

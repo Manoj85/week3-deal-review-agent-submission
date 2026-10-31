@@ -58,6 +58,19 @@ class StepEvent(BaseModel):
     status: Literal["completed"] = "completed"
 
 
+class AgentRun(BaseModel):
+    agent: str
+    execution: Literal["nebius", "offline_test"]
+    input_refs: list[str]
+    tool_calls: list[dict] = Field(default_factory=list)
+    output: dict = Field(default_factory=dict)
+    model_calls: int = 0
+    usage: dict[str, int] = Field(default_factory=dict)
+    model: str = ""
+    response_model: str | None = None
+    prompt_version: str = ""
+
+
 class ReviewPacket(BaseModel):
     run_id: str
     document_id: str
@@ -77,4 +90,7 @@ class ReviewPacket(BaseModel):
     elapsed_ms: float
     model_calls: int = 0
     model_metadata: dict = Field(default_factory=dict)
+    agent_runs: list[AgentRun] = Field(default_factory=list)
+    policy_review: dict = Field(default_factory=dict)
+    risk_findings: list[dict] = Field(default_factory=list)
     limitations: list[str]
