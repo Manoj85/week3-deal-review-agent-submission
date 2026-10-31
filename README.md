@@ -1,6 +1,6 @@
 # Week 3 Small Business Loan Review Assistant
 
-Project 3B, code track. The current backend uses Nebius to extract evidence-backed facts, then checks six fictional rules and builds a review packet. Full multi-agent behavior, human resume, and React remain later checkpoints.
+Project 3B, code track. The current backend runs three Nebius-backed specialist roles: extraction, policy review with checked Python tools, and cited risk summary. Durable human review/resume and React remain later checkpoints.
 
 ## Local setup on Windows PowerShell
 
@@ -90,6 +90,10 @@ The sample saves its full request/review under work/checkpoint-01/. Expected rou
 $body = Get-Content -LiteralPath 'work/checkpoint-01/sample-request.json' -Raw
 Invoke-RestMethod -Method Post -Uri 'http://127.0.0.1:8013/reviews' -ContentType 'application/json' -Body $body
 ```
+
+## Inspect the three specialist roles
+
+The response includes agent_runs, policy_review, risk_findings, aggregate model_calls, and per-stage token metadata. Rule decisions and arithmetic remain authoritative Python outputs. Each live review now uses multiple calls, not just extraction. See [the specialist walkthrough](docs/lessons/06-specialist-workflow.md).
 
 ## Connect Nebius
 
